@@ -24,6 +24,9 @@ import java.net.URL
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.max
+import android.net.ConnectivityManager
+import android.os.Build
+import android.annotation.SuppressLint
 
 private const val TAG = "UpdateManager"
 private const val UPDATE_FILE_NAME = "update.apk"
@@ -47,6 +50,7 @@ class UpdateManager @Inject constructor(
     private val secureUpdateHelper: SecureUpdateHelper
 ) {
 
+    private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     /**
      * Compares two version name strings (e.g., "1.2.3" vs "1.2.10").
      * @return A positive integer if remoteVersion is greater, a negative integer if localVersion is greater,
@@ -67,6 +71,19 @@ class UpdateManager @Inject constructor(
     }
 
     suspend fun checkForUpdate(): UpdateResult = withContext(Dispatchers.IO) {
+        @SuppressLint("MissingPermission")
+        val isNetworkUnavailable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            connectivityManager.activeNetwork == null
+        } else {
+            @Suppress("DEPRECATION")
+            connectivityManager.activeNetworkInfo?.isConnected != true
+        }
+
+        if (isNetworkUnavailable) {
+            Log.d(TAG, "Update check skipped: No active network connection.")
+            return@withContext UpdateResult.NoUpdate
+        }
+
         if (!secureUpdateHelper.isOfficialBuild()) {
             Log.d(TAG, "Update check skipped: Not an official build.")
             return@withContext UpdateResult.NoUpdate

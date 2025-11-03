@@ -2,10 +2,9 @@
 <resources>
     <!-- app info -->
     <string name="app_name">A Bloq</string>
-    <string name="app_version_name_for_logic" translatable="false">0.4.5</string> <!-- מספר הגרסה הלוגי להשוואה -->
+    <string name="app_version_name_for_logic" translatable="false">0.4.5</string>
     <string name="device_admin_description">מאפשר ל-A Bloq לאכוף מדיניות אבטחה על המכשיר.</string>
     <string name="app_version">בטא 0.4.5</string>
-    <!-- App Info Dialog -->
     <string name="unofficial_warning_title">אזהרת אבטחה</string>
     <string name="unofficial_warning_message">אפליקציה זו אינה רשמית ונעשו בה שינויים!</string>
 
@@ -81,11 +80,10 @@
     <string name="dialog_changes_saved_successfully">ההגדרות נשמרו בהצלחה!</string>
 
     <!-- Secure Update & Auto Update -->
-    <string name="app_build_status" translatable="false">רשמית</string> <!-- שנה ל"לא רשמית" בגרסאות פיתוח -->
+    <string name="app_build_status" translatable="false">רשמית</string>
     <string name="update_version_url" translatable="false">https://raw.githubusercontent.com/sesese1234/SecureGuardMDM/refs/heads/main/version.txt</string>
     <string name="update_changelog_url" translatable="false">https://raw.githubusercontent.com/sesese1234/SecureGuardMDM/refs/heads/main/changes.txt</string>
     <string name="update_apk_download_url" translatable="false">https://github.com/sesese1234/SecureGuardMDM/raw/refs/heads/main/app/release/Abloq-release.apk</string>
-    //https://github.com/sesese1234/SecureGuardMDM/releases/download/Beta/Abloq-release.apk
     <string name="update_dialog_title">עדכון זמין</string>
     <string name="update_dialog_changelog_title">יומן שינויים:</string>
     <string name="update_dialog_button_download">הורד והתקן</string>
@@ -99,7 +97,6 @@
     <string name="update_error_no_signature">לא נמצאה חתימה בקובץ ה-APK.</string>
     <string name="update_error_verification_failed">אימות העדכון נכשל. הקובץ נמחק.</string>
     <string name="update_error_download_failed">הורדת העדכון נכשלה.</string>
-
 
     <!-- Feature Titles & Descriptions -->
     <string name="feature_block_incoming_calls_title">חסימת טלפון לגמרי (שיחות)</string>
@@ -196,13 +193,10 @@
     <string name="feature_block_content_capture_description">מונעת מאפליקציות צד שלישי ללכוד את תוכן המסך לצורך ניתוח.</string>
     <string name="feature_block_system_error_dialogs_title">חסימת דיאלוג שגיאות מערכת</string>
     <string name="feature_block_system_error_dialogs_description">מונעת הצגת חלונות קופצים של שגיאות מערכת (כמו "אפליקציה קרסה").</string>
-    <!-- Feature: Block Password Change (via impossible policy) -->
     <string name="feature_block_password_change_title">חסימת שינוי סיסמה</string>
     <string name="feature_block_password_change_description">מונעת שינוי סיסמת המכשיר</string>
-    <!-- Toasts for NetGuard -->
     <string name="toast_installing_netguard">מתקין את NetGuard...</string>
     <string name="toast_netguard_can_be_uninstalled">NetGuard אינו מוגן יותר. כעת ניתן למחוק את האפליקציה.</string>
-    <!-- NEW NetGuard and VPN Features -->
     <string name="feature_block_vpn_settings_title">חסימת הגדרות VPN</string>
     <string name="feature_block_vpn_settings_description">מונע מהמשתמש לגשת למסך הגדרות ה-VPN של המכשיר.</string>
     <string name="feature_install_netguard_title">התקן והגן על NetGuard</string>
@@ -210,10 +204,8 @@
     <string name="feature_force_netguard_vpn_title">כפה את NetGuard כ-VPN תמידי</string>
     <string name="feature_force_netguard_vpn_description">מגדיר את NetGuard כ-VPN במצב Always-On עם נעילה.</string>
     <string name="conflict_reason_netguard_installed">מושבת מכיוון ש-NetGuard מותקן</string>
-    <!-- Feature: FRP Protection -->
     <string name="feature_frp_protection_title">הגנת איפוס (FRP)</string>
     <string name="feature_frp_protection_description">מונע איפוס המכשיר על ידי נעילתו לחשבונות Google מוגדרים מראש.</string>
-    <!-- Category Titles -->
     <string name="category_device_management">ניהול מכשיר כללי</string>
     <string name="category_hardware">חומרה וחיישנים</string>
     <string name="category_network">רשת ותקשורת</string>
@@ -222,16 +214,12 @@
     <string name="category_calls_sms">שיחות והודעות</string>
     <string name="category_ui">ממשק משתמש</string>
     <string name="category_advanced">הגדרות מערכת מתקדמות</string>
-    <!-- FRP Warning -->
     <string name="feature_frp_protection_experimental_tag">(נסיוני)</string>
     <string name="frp_warning_dialog_title">אזהרה: תכונה נסיונית</string>
     <string name="frp_warning_dialog_message">הפעלת הגנת FRP היא פעולה מתקדמת שעלולה, במקרים נדירים או בתצורה שגויה, לנעול את המכשיר לצמיתות ולדרוש התערבות יצרן. האם אתה בטוח שברצונך להמשיך?</string>
-    <!-- App Info Dialog -->
     <string name="contact_email">c51525355@gmail.com</string>
 
-    <!-- Settings Screen - Update Settings -->
     <string name="settings_item_enable_updates">אפשר עדכונים לאפליקציה</string>
-    <!-- Settings Screen - New Category -->
     <string name="category_ui_and_behavior">התאמה אישית והתנהגות</string>
     <string name="settings_item_toggle_position">הצג פקדים בצד ימין</string>
     <string name="settings_item_use_checkbox">השתמש בתיבות סימון (במקום מתגים)</string>
@@ -241,22 +229,16 @@
     <string name="settings_lock_dialog_title">אזהרה: פעולה בלתי הפיכה</string>
     <string name="settings_lock_dialog_message">נעילת ההגדרות תסיר לצמיתות את הגישה למסך זה ותשבית את כל העדכונים העתידיים. לא ניתן לבטל פעולה זו. האם אתה בטוח שברצונך להמשיך?</string>
 
-    <!-- setting lock -->
     <string name="settings_lock_dialog_allow_manual_update">השאר עדכון ידני מאובטח פעיל</string>
-    <!-- Manual Update Check -->
     <string name="check_for_updates">בדוק אם יש עדכון</string>
     <string name="update_check_checking">בודק עדכונים...</string>
     <string name="update_check_no_update">יש לך את הגרסה העדכנית ביותר.</string>
-    <!-- New Settings Categories -->
     <string name="category_app_management">ניהול אפליקציות</string>
     <string name="category_advanced_actions">פעולות מתקדמות</string>
 
-    <!-- New Settings Item -->
     <string name="settings_item_frp">הגדר FRP מותאם אישית</string>
-    <!-- Boot Completed Notification -->
     <string name="boot_notification_message">A Bloq הופעל עם הדלקת המכשיר!</string>
     <string name="settings_item_show_boot_toast">הצג התראה בעת הפעלת המכשיר</string>
-    <!-- Kiosk Mode Strings -->
     <string name="category_kiosk_mode">מצב קיוסק</string>
     <string name="settings_item_manage_kiosk">נהל מצב קיוסק</string>
     <string name="kiosk_management_title">ניהול מצב קיוסק</string>
@@ -266,16 +248,13 @@
     <string name="kiosk_block_launcher_dialog_title">הפעלת מצב קיוסק</string>
     <string name="kiosk_block_launcher_dialog_message">האם לחסום את אפליקציית מסך הבית הנוכחית (Launcher)? חסימתה תמנע יציאה ממצב קיוסק באמצעות כפתור הבית.</string>
     <string name="kiosk_toast_disabled">מצב קיוסק בוטל.</string>
-    <!-- Kiosk Customization Screen -->
     <string name="kiosk_customization_title">התאמה אישית</string>
     <string name="kiosk_customization_header_title">כותרת עליונה</string>
     <string name="kiosk_customization_background_color">צבע רקע</string>
     <string name="kiosk_customization_accent_color">צבע מבטא (Accent)</string>
-    <!--very secret thing... -->
     <string name="kiosk_customization_date_format">פורמט תאריך</string>
     <string name="kiosk_date_format_gregorian">לועזי</string>
     <string name="kiosk_date_format_hebrew">עברי</string>
-    <!--end of very secret thing...-->
     <string name="kiosk_customization_general_settings">הגדרות כלליות</string>
     <string name="kiosk_customization_show_update_button">הצג כפתור עדכון מאובטח</string>
     <string name="kiosk_customization_bottom_bar_actions">פעולות בסרגל התחתון</string>
@@ -283,14 +262,12 @@
     <string name="folder_name_dialog_hint">הכנס שם</string>
     <string name="folder_name_dialog_create">צור</string>
 
-    <!-- Kiosk Action Buttons -->
     <string name="kiosk_action_flashlight">פנס</string>
     <string name="kiosk_action_bluetooth">בלוטות\'</string>
     <string name="kiosk_action_wifi">Wi-Fi</string>
     <string name="kiosk_action_volume">עוצמת קול</string>
     <string name="kiosk_action_location">מיקום</string>
     <string name="kiosk_action_rotation">נעילת סיבוב</string>
-    <!-- Kiosk Screen -->
     <string name="kiosk_no_apps_selected">לא נבחרו אפליקציות להצגה</string>
     <string name="kiosk_toast_feature_unavailable">התכונה הזאת עתידית - ואינה זמינה בגרסה שברשותך!</string>
     <string name="kiosk_management_customize">התאם אישית תצוגה ופעולות</string>
@@ -302,4 +279,12 @@
     <string name="kiosk_content_desc_secure_update">עדכון מאובטח</string>
     <string name="kiosk_content_desc_main_settings">הגדרות ראשיות</string>
     <string name="kiosk_content_desc_about_app">אודות האפליקציה</string>
+
+    <!-- Netfree Only Mode -->
+    <string name="feature_netfree_only_title">מצב נטפרי בלבד</string>
+    <string name="feature_netfree_only_description">חוסם את כל תעבורת הרשת אם החיבור אינו מסונן על ידי נטפרי.</string>
+    <string name="toast_netfree_check_started">רשת חדשה זוהתה, בודק סינון נטפרי...</string>
+    <string name="toast_netfree_check_success">הרשת מאושרת על ידי נטפרי. גלישה מאופשרת.</string>
+    <string name="toast_netfree_check_fail_blocking">הרשת אינה מסוננת. האינטרנט נחסם.</string>
+
 </resources>

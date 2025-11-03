@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import androidx.room.Room
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.secureguard.mdm.boot.impl.NetfreeWatchdogBootTask
 import com.secureguard.mdm.boot.impl.ShowToastOnBootTask
 import com.secureguard.mdm.data.db.AppDatabase
 import com.secureguard.mdm.data.db.BlockedAppCacheDao
@@ -29,22 +30,16 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    /**
-     * מספק מופע יחיד של מסד הנתונים Room לכל האפליקציה.
-     */
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
-            "secure_guard_database" // שם קובץ מסד הנתונים
+            "secure_guard_database"
         ).build()
     }
 
-    /**
-     * מספק מופע יחיד של ה-DAO לאפליקציות חסומות, מתוך מסד הנתונים.
-     */
     @Provides
     @Singleton
     fun provideBlockedAppCacheDao(appDatabase: AppDatabase): BlockedAppCacheDao {
@@ -81,11 +76,6 @@ object AppModule {
         return UpdateManager(context, secureUpdateHelper)
     }
 
-    /**
-     * Provides the ShowToastOnBootTask as a regular dependency.
-     * The BootTaskRegistry will require this in its constructor.
-     * We no longer use @IntoSet.
-     */
     @Provides
     @Singleton
     fun provideShowToastOnBootTask(
@@ -93,6 +83,14 @@ object AppModule {
         settingsRepository: SettingsRepository
     ): ShowToastOnBootTask {
         return ShowToastOnBootTask(context, settingsRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNetfreeWatchdogBootTask(
+        @ApplicationContext context: Context
+    ): NetfreeWatchdogBootTask {
+        return NetfreeWatchdogBootTask(context)
     }
 
     @Provides
