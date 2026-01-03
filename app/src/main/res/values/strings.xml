@@ -82,6 +82,7 @@
 
     <!-- Secure Update & Auto Update -->
     <string name="app_build_status" translatable="false">רשמית</string>
+
     <string name="update_version_url" translatable="false">https://raw.githubusercontent.com/sesese1234/SecureGuardMDM/refs/heads/main/versiontest.txt</string>
     <string name="update_changelog_url" translatable="false">https://raw.githubusercontent.com/sesese1234/SecureGuardMDM/refs/heads/main/changes.txt</string>
     <string name="update_apk_download_url" translatable="false">https://github.com/sesese1234/A-Bloq-testing-repository/releases/download/secrets/Abloq-releasetest.apk</string>
