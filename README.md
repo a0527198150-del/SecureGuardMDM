@@ -1,1 +1,0 @@
-**A Bloq (SecureGuard MDM)**
