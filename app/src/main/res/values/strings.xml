@@ -2,9 +2,9 @@
 <resources>
     <!-- app info -->
     <string name="app_name">A Bloq</string>
-    <string name="app_version_name_for_logic" translatable="false">0.4.6</string>
+    <string name="app_version_name_for_logic" translatable="false">0.5</string>
     <string name="device_admin_description">מאפשר ל-A Bloq לאכוף מדיניות אבטחה על המכשיר.</string>
-    <string name="app_version">בטא 0.4.5</string>
+    <string name="app_version">בטא 0.5</string>
     <string name="unofficial_warning_title">אזהרת אבטחה</string>
     <string name="unofficial_warning_message">אפליקציה זו אינה רשמית ונעשו בה שינויים!</string>
 
@@ -249,9 +249,9 @@
     <string name="update_channel_button">ערוץ עדכון</string>
     <string name="update_settings_title">הגדרות עדכון</string>
     <string name="update_channel_stable">ערוץ יציב</string>
-    <string name="update_channel_prebuild">ערוץ Prebuild</string>
+    <string name="update_channel_PreRelease">ערוץ PreRelease</string>
     <string name="update_channel_explanation_title">הסבר</string>
-    <string name="update_channel_explanation_message">מומלץ לבחור בערוץ יציב, אך אם אתה מעונין בפיצ\'רים החדשים מיד שהם יוצאים, אתה יכול לבחור בערוץ הPrebuild.</string>
+    <string name="update_channel_explanation_message">מומלץ לבחור בערוץ יציב, אך אם אתה מעונין בפיצ\'רים החדשים מיד שהם יוצאים, אתה יכול לבחור בערוץ הPreRelease.</string>
     <string name="settings_item_frp">הגדר FRP מותאם אישית</string>
     <string name="boot_notification_message">A Bloq הופעל עם הדלקת המכשיר!</string>
     <string name="settings_item_show_boot_toast">הצג התראה בעת הפעלת המכשיר</string>
