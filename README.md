@@ -77,7 +77,8 @@ If you prefer to provision the device manually using the command line:
 
 ## License & Contributions
 
-This project is open-source under the MIT License. Pull requests and issues are welcome on the GitHub repository.
+This project have no License right now.
+feel free!
 
 ### Disclaimer
 This software utilizes powerful device policy and network inspection permissions. 
