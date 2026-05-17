@@ -73,7 +73,7 @@ If you prefer to provision the device manually using the command line:
 ## Version History
 
 * **v0.4.6:** MDM core with launcher, app suspension, and VPN firewall.
-* **v0.5.0:**Refined policy execution, optimized VPN configurations, and updated UI screens.
+* **v0.5.0:** Refined policy execution, optimized VPN configurations, and updated UI screens.
 
 ## License & Contributions
 
