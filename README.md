@@ -1,5 +1,8 @@
 # A Bloq (SecureGuard MDM) - Version 0.5.0
 
+# 4,053 Downloads 
+(updated every two weeks)
+
 A Bloq is an Android Mobile Device Management (MDM) client that enforces system policies, restricts application usage, runs a lockdown kiosk mode, and manages network security filters.
 
 Originally named SecureGuard MDM, the project was rebranded to A Bloq in version 0.4.2.
