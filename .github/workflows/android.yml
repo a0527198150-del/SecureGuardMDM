@@ -20,22 +20,15 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Repair Gradle Wrapper
-      run: gradle wrapper
-
+    # שלב זה מזריק את ההגדרות למניעת קריסת KSP ישירות לקובץ ההגדרות
     - name: Force Headless Mode for KSP and Kotlin
       run: |
         echo "org.gradle.jvmargs=-Djava.awt.headless=true -Xmx4096m" >> gradle.properties
         echo "kotlin.daemon.jvmopts=-Djava.awt.headless=true" >> gradle.properties
         echo "ksp.incremental=false" >> gradle.properties
 
-    - name: Build with Gradle
-      run: ./gradlew assembleDebug --stacktrace
-      env:
-        JAVA_TOOL_OPTIONS: "-Djava.awt.headless=true"
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
+    # התוסף הרשמי של גראדל שמוריד גרסה נקייה ותקינה ועוקף את הקובץ הפגום
+    - name: Setup and Run Gradle
+      uses: gradle/actions/setup-gradle@v4
       with:
-        name: app-debug
-        path: app/build/outputs/apk/debug/app-debug.apk
+        arguments: assembleDebug --stacktrace
