@@ -28,7 +28,16 @@ jobs:
         echo "ksp.incremental=false" >> gradle.properties
 
     # התוסף הרשמי של גראדל שמוריד גרסה נקייה ותקינה ועוקף את הקובץ הפגום
+    # gradle-version מוגדר במפורש כדי לעקוף לחלוטין את gradlew (שאיבד את הרשאת ההרצה שלו ב-git)
     - name: Setup and Run Gradle
       uses: gradle/actions/setup-gradle@v4
       with:
+        gradle-version: 8.11.1
         arguments: assembleDebug --stacktrace
+
+    # מעלה את קובץ ה-APK שנוצר כ-artifact להורדה מעמוד ה-Actions
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: SecureGuardMDM-debug-apk
+        path: app/build/outputs/apk/debug/*.apk
