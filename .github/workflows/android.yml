@@ -21,8 +21,11 @@ jobs:
         distribution: 'temurin'
 
     # שלב זה מזריק את ההגדרות למניעת קריסת KSP ישירות לקובץ ההגדרות
+    # שימו לב לירידת השורה הראשונה (echo "") - היא מוודאת שהשורות החדשות
+    # לא יידבקו לסוף השורה האחרונה הקיימת בקובץ (אם הוא לא הסתיים בירידת שורה)
     - name: Force Headless Mode for KSP and Kotlin
       run: |
+        echo "" >> gradle.properties
         echo "org.gradle.jvmargs=-Djava.awt.headless=true -Xmx4096m" >> gradle.properties
         echo "kotlin.daemon.jvmopts=-Djava.awt.headless=true" >> gradle.properties
         echo "ksp.incremental=false" >> gradle.properties
