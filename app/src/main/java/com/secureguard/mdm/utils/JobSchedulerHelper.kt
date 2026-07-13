@@ -5,6 +5,7 @@ import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
 import com.secureguard.mdm.services.ServiceWatchdogJob
+import com.secureguard.mdm.services.ScreenTimeEnforcerJob
 import java.util.concurrent.TimeUnit
 
 object JobSchedulerHelper {
