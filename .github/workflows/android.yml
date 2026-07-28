@@ -29,7 +29,29 @@ jobs:
           chmod +x ./gradlew || true
         fi
 
-    # Install Android SDK (command-line tools) and required packages
+    - name: Show environment and diagnostics
+      run: |
+        echo "=== java -version ==="
+        java -XshowSettings:properties -version || java -version || true
+        echo "=== gradle wrapper file info ==="
+        ls -la gradlew gradle || true
+        echo "=== gradle-wrapper.properties ==="
+        cat gradle/wrapper/gradle-wrapper.properties || true
+        echo "=== ./gradlew --version ==="
+        ./gradlew --version || true
+        echo "=== print PATH ==="
+        echo $PATH || true
+
+    - name: Cache Gradle
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
     - name: Install Android SDK (command-line tools)
       run: |
         sudo apt-get update
@@ -37,19 +59,16 @@ jobs:
         mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
         wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
         unzip -q cmdline-tools.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
-        # The extracted folder may be named 'cmdline-tools'
         if [ -d "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" ]; then
           mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest" || true
         fi
         export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH"
-        # Install essential SDK components and accept licenses
         yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" --licenses || true
         "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "platforms;android-34" "build-tools;34.0.0" "cmdline-tools;latest"
+        echo "=== sdkmanager list ==="
+        "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" --list || true
       shell: bash
 
-    # שלב זה מזריק את ההגדרות למניעת קריסת KSP ישירות לקובץ ההגדרות
-    # שימו לב לירידת השורה הראשונה (echo "") - היא מוודאת שהשורות החדשות
-    # לא יידבקו לסוף השורה האחרונה הקיימת בקובץ (אם הוא לא הסתיים בירידת שורה)
     - name: Force Headless Mode for KSP and Kotlin
       run: |
         echo "" >> gradle.properties
@@ -57,14 +76,20 @@ jobs:
         echo "kotlin.daemon.jvmopts=-Djava.awt.headless=true" >> gradle.properties
         echo "ksp.incremental=false" >> gradle.properties
 
-    # Use the Gradle wrapper to ensure consistent Gradle version and avoid relying
-    # on the system 'gradle' command. The wrapper will download the correct Gradle
-    # distribution if needed.
-    - name: Build with Gradle Wrapper
-      run: ./gradlew assembleDebug --no-daemon --stacktrace
+    - name: Run Gradle Build (capture output)
+      continue-on-error: true
+      run: |
+        set -o pipefail
+        ./gradlew assembleDebug --no-daemon --stacktrace --info 2>&1 | tee build.log
 
-    # מעלה את קובץ ה-APK שנוצר כ-artifact להורדה מעמוד ה-Actions
+    - name: Upload build log
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-log
+        path: build.log
+
     - name: Upload APK
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: SecureGuardMDM-debug-apk
