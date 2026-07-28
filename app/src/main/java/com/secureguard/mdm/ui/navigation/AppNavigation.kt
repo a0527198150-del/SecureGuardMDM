@@ -128,7 +128,12 @@ fun AppNavigation(
             }
             composable(Routes.SCREEN_TIME_SETTINGS) {
                 com.secureguard.mdm.screentime.ui.ScreenTimeSettingsScreen(
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToProfileEdit = { profileId ->
+                        // Navigate to profile edit screen. Use an empty string for new profile.
+                        val idSegment = profileId ?: ""
+                        navController.navigate("/screentime/edit/$idSegment")
+                    }
                 )
             }
         }
