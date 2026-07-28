@@ -20,6 +20,12 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Make Gradle Wrapper Executable
+      run: |
+        if [ -f ./gradlew ]; then
+          chmod +x ./gradlew || true
+        fi
+
     # שלב זה מזריק את ההגדרות למניעת קריסת KSP ישירות לקובץ ההגדרות
     # שימו לב לירידת השורה הראשונה (echo "") - היא מוודאת שהשורות החדשות
     # לא יידבקו לסוף השורה האחרונה הקיימת בקובץ (אם הוא לא הסתיים בירידת שורה)
@@ -30,17 +36,11 @@ jobs:
         echo "kotlin.daemon.jvmopts=-Djava.awt.headless=true" >> gradle.properties
         echo "ksp.incremental=false" >> gradle.properties
 
-    # התוסף הרשמי של גראדל שמוריד גרסה נקייה ותקינה ועוקף את הקובץ הפגום
-    # gradle-version מוגדר במפורש כדי לעקוף לחלוטין את gradlew (שאיבד את הרשאת ההרצה שלו ב-git)
-    # שים לב: בגרסה החדשה של ה-action, השלב הזה רק "מכין" את גראדל - לא מריץ build
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
-      with:
-        gradle-version: 8.11.1
-
-    # השלב שבפועל מריץ את ה-build, בנפרד מההכנה
-    - name: Run Gradle Build
-      run: gradle assembleDebug --stacktrace
+    # Use the Gradle wrapper to ensure consistent Gradle version and avoid relying
+    # on the system 'gradle' command. The wrapper will download the correct Gradle
+    # distribution if needed.
+    - name: Build with Gradle Wrapper
+      run: ./gradlew assembleDebug --no-daemon --stacktrace
 
     # מעלה את קובץ ה-APK שנוצר כ-artifact להורדה מעמוד ה-Actions
     - name: Upload APK
