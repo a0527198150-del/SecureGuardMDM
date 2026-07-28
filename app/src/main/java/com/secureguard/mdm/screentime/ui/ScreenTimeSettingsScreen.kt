@@ -2,7 +2,6 @@ package com.secureguard.mdm.screentime.ui
 
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,19 +9,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import com.secureguard.mdm.R
-import com.secureguard.mdm.appblocker.AppInfo
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import com.secureguard.mdm.screentime.ScreenTimeProfile
 import com.secureguard.mdm.screentime.vm.ScreenTimeSettingsViewModel
 import com.secureguard.mdm.services.ScreenTimeEnforcer
 
@@ -30,22 +29,43 @@ import com.secureguard.mdm.services.ScreenTimeEnforcer
 @Composable
 fun ScreenTimeSettingsScreen(
     viewModel: ScreenTimeSettingsViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToProfileEdit: (profileId: String?) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val hasUsageAccess = remember { mutableStateOf(ScreenTimeEnforcer.hasUsageAccessPermission(context)) }
 
+    // רענון הרשימה כשחוזרים למסך הזה (למשל אחרי שמירת/מחיקת פרופיל)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasUsageAccess.value = ScreenTimeEnforcer.hasUsageAccessPermission(context)
+                viewModel.refresh()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(id = R.string.screen_time_title)) },
+                title = { Text("הגבלת זמן מסך") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            if (uiState.isEnabled) {
+                FloatingActionButton(onClick = { onNavigateToProfileEdit(null) }) {
+                    Icon(Icons.Filled.Add, contentDescription = "הוסף פרופיל")
+                }
+            }
         }
     ) { padding ->
         if (uiState.isLoading) {
@@ -68,19 +88,13 @@ fun ScreenTimeSettingsScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = stringResource(id = R.string.screen_time_enable_toggle),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Switch(
-                        checked = uiState.isEnabled,
-                        onCheckedChange = { viewModel.onToggleEnabled(it) }
-                    )
+                    Text("הפעלת הגבלת זמן מסך", style = MaterialTheme.typography.titleMedium)
+                    Switch(checked = uiState.isEnabled, onCheckedChange = { viewModel.onToggleEnabled(it) })
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            if (!hasUsageAccess.value) {
+            if (uiState.isEnabled && !hasUsageAccess.value) {
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -88,14 +102,14 @@ fun ScreenTimeSettingsScreen(
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
-                                text = stringResource(id = R.string.screen_time_usage_access_warning),
+                                "כדי לאכוף מגבלות זמן, יש לאשר גישה לנתוני שימוש",
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Button(onClick = {
                                 context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                             }) {
-                                Text(stringResource(id = R.string.screen_time_usage_access_button))
+                                Text("פתח הגדרות גישה לנתוני שימוש")
                             }
                         }
                     }
@@ -103,72 +117,25 @@ fun ScreenTimeSettingsScreen(
                 }
             }
 
-            item {
-                Text(
-                    text = stringResource(id = R.string.screen_time_daily_limit_label),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Slider(
-                        value = uiState.dailyLimitMinutes.toFloat(),
-                        onValueChange = { viewModel.onDailyLimitChanged(it.toInt()) },
-                        valueRange = 5f..240f,
-                        steps = 46,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("${uiState.dailyLimitMinutes} ${stringResource(id = R.string.screen_time_minutes_suffix)}")
+            if (uiState.isEnabled) {
+                if (uiState.profiles.isEmpty()) {
+                    item {
+                        Text(
+                            "אין עדיין פרופילים. לחץ על + כדי להוסיף פרופיל ראשון.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    items(uiState.profiles, key = { it.id }) { profile ->
+                        ProfileCard(
+                            profile = profile,
+                            onClick = { onNavigateToProfileEdit(profile.id) },
+                            onDelete = { viewModel.deleteProfile(profile.id) }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            item {
-                Text(
-                    text = stringResource(id = R.string.screen_time_allowed_hours_label),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    HourPicker(
-                        label = stringResource(id = R.string.screen_time_allowed_hours_from),
-                        hour = uiState.allowedStartHour,
-                        onHourChange = { viewModel.onAllowedHoursChanged(it, uiState.allowedEndHour) }
-                    )
-                    HourPicker(
-                        label = stringResource(id = R.string.screen_time_allowed_hours_to),
-                        hour = uiState.allowedEndHour,
-                        onHourChange = { viewModel.onAllowedHoursChanged(uiState.allowedStartHour, it) }
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            item {
-                Text(
-                    text = stringResource(id = R.string.screen_time_select_apps_label),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = uiState.searchQuery,
-                    onValueChange = { viewModel.onSearchQueryChanged(it) },
-                    placeholder = { Text(stringResource(id = R.string.screen_time_search_apps_hint)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            items(uiState.filteredApps, key = { it.packageName }) { app ->
-                AppRow(
-                    app = app,
-                    isSelected = uiState.selectedPackages.contains(app.packageName),
-                    onClick = { viewModel.toggleApp(app.packageName) }
-                )
             }
 
             item { Spacer(modifier = Modifier.height(24.dp)) }
@@ -177,50 +144,35 @@ fun ScreenTimeSettingsScreen(
 }
 
 @Composable
-private fun HourPicker(label: String, hour: Int, onHourChange: (Int) -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = label, style = MaterialTheme.typography.labelMedium)
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { onHourChange(((hour - 1) + 24) % 24) }) {
-                Text("-", style = MaterialTheme.typography.titleLarge)
-            }
-            Text(
-                text = String.format("%02d:00", hour),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.width(64.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-            IconButton(onClick = { onHourChange((hour + 1) % 24) }) {
-                Text("+", style = MaterialTheme.typography.titleLarge)
-            }
-        }
-    }
-}
-
-@Composable
-private fun AppRow(app: AppInfo, isSelected: Boolean, onClick: () -> Unit) {
-    Row(
+private fun ProfileCard(profile: ScreenTimeProfile, onClick: () -> Unit, onDelete: () -> Unit) {
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(vertical = 8.dp, horizontal = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp)
     ) {
-        Image(
-            painter = rememberDrawablePainter(drawable = app.icon),
-            contentDescription = app.appName,
+        Row(
             modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(8.dp))
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = app.appName,
-            modifier = Modifier.weight(1f),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        Checkbox(checked = isSelected, onCheckedChange = { onClick() })
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(profile.name, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    "${profile.appPackages.size} אפליקציות · ${profile.dailyLimitMinutes} דק' ליום · " +
+                        "${String.format("%02d:00", profile.allowedStartHour)}-${String.format("%02d:00", profile.allowedEndHour)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (!profile.isEnabled) {
+                    Text("מושבת", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
+                }
+            }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Filled.Delete, contentDescription = "מחק פרופיל")
+            }
+        }
     }
 }
