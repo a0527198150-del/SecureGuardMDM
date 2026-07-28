@@ -14,9 +14,9 @@ import java.util.concurrent.TimeUnit
 
 /**
  * הלוגיקה המרכזית של הגבלת זמן המסך.
- * מריץ בדיקה: לכל אפליקציה שנבחרה, בודק אם היא בתוך חלון השעות המותרות
- * וגם לא חרגה ממכסת הדקות היומית (על סמך UsageStatsManager של המערכת).
- * אם לא - האפליקציה מושעית (Suspended) עד שהיא חוזרת להיות תקינה.
+ * תומך בכמה פרופילים במקביל. אם אפליקציה שייכת ליותר מפרופיל אחד,
+ * חל עליה החיתוך המחמיר: היא מותרת רק אם *כל* הפרופילים שהיא שייכת אליהם
+ * מאשרים אותה (גם בטווח השעות שלהם וגם מתחת למגבלת הדקות שלהם).
  */
 object ScreenTimeEnforcer {
 
@@ -39,7 +39,8 @@ object ScreenTimeEnforcer {
     }
 
     /**
-     * מריץ מחזור בדיקה אחד: קורא הגדרות, בודק חריגות, ומשעה/משחרר אפליקציות בהתאם.
+     * מריץ מחזור בדיקה אחד על פני כל הפרופילים הפעילים: קורא הגדרות,
+     * ממזג אותן לפי "הכי מחמיר מנצח", ומשעה/משחרר אפליקציות בהתאם.
      */
     suspend fun runEnforcementCycle(context: Context, settingsRepository: SettingsRepository) {
         if (!settingsRepository.isScreenTimeEnabled()) {
@@ -59,43 +60,51 @@ object ScreenTimeEnforcer {
             return
         }
 
-        val selectedPackages = settingsRepository.getScreenTimeAppPackages()
-        val dailyLimitMinutes = settingsRepository.getScreenTimeDailyLimitMinutes()
-        val startHour = settingsRepository.getScreenTimeAllowedStartHour()
-        val endHour = settingsRepository.getScreenTimeAllowedEndHour()
+        val profiles = settingsRepository.getScreenTimeProfiles().filter { it.isEnabled }
         val previouslySuspended = settingsRepository.getScreenTimeSuspendedPackages()
 
-        val usageByPackage = getTodayUsageMinutes(context, selectedPackages)
-        val nowInsideWindow = isCurrentHourInAllowedWindow(startHour, endHour)
+        if (profiles.isEmpty()) {
+            releaseAllSuspensions(context, settingsRepository)
+            return
+        }
+
+        // כל האפליקציות המנוהלות ע"י לפחות פרופיל אחד
+        val managedPackages = profiles.flatMap { it.appPackages }.toSet()
+        val usageByPackage = getTodayUsageMinutes(context, managedPackages)
 
         val stillSuspended = mutableSetOf<String>()
 
-        for (packageName in selectedPackages) {
+        for (packageName in managedPackages) {
+            val relevantProfiles = profiles.filter { it.appPackages.contains(packageName) }
             val usedMinutes = usageByPackage[packageName] ?: 0L
-            val overDailyLimit = usedMinutes >= dailyLimitMinutes
-            val shouldBeSuspended = overDailyLimit || !nowInsideWindow
+
+            // "הכי מחמיר מנצח": מספיק שפרופיל אחד חוסם כדי שהאפליקציה תושעה.
+            val shouldBeSuspended = relevantProfiles.any { profile ->
+                val overDailyLimit = usedMinutes >= profile.dailyLimitMinutes
+                val outsideWindow = !isCurrentHourInAllowedWindow(profile.allowedStartHour, profile.allowedEndHour)
+                overDailyLimit || outsideWindow
+            }
 
             if (shouldBeSuspended) {
                 if (!isPackageSuspended(dpm, admin, packageName)) {
                     trySetSuspended(dpm, admin, packageName, true)
                     FileLogger.log(
                         TAG,
-                        "Suspended $packageName (usedMinutes=$usedMinutes, limit=$dailyLimitMinutes, inWindow=$nowInsideWindow)"
+                        "Suspended $packageName (usedMinutes=$usedMinutes, profiles=${relevantProfiles.map { it.name }})"
                     )
                 }
                 stillSuspended.add(packageName)
             } else if (previouslySuspended.contains(packageName)) {
-                // היה מושעה קודם ע"י הפיצ'ר הזה, וכעת מותר להשתמש בו - לשחרר.
                 trySetSuspended(dpm, admin, packageName, false)
-                FileLogger.log(TAG, "Released $packageName (back within limit/window)")
+                FileLogger.log(TAG, "Released $packageName (back within limits/windows of all its profiles)")
             }
         }
 
-        // ניקוי: אפליקציות שהוסרו מהרשימה הנבחרת אך עדיין רשומות כמושעות ע"י הפיצ'ר
-        val removedFromSelection = previouslySuspended - selectedPackages
-        removedFromSelection.forEach { packageName ->
+        // ניקוי: אפליקציות שהוסרו מכל הפרופילים אך עדיין רשומות כמושעות ע"י הפיצ'ר
+        val removedFromAllProfiles = previouslySuspended - managedPackages
+        removedFromAllProfiles.forEach { packageName ->
             trySetSuspended(dpm, admin, packageName, false)
-            FileLogger.log(TAG, "Released $packageName (removed from screen-time selection)")
+            FileLogger.log(TAG, "Released $packageName (no longer managed by any profile)")
         }
 
         settingsRepository.setScreenTimeSuspendedPackages(stillSuspended)
@@ -144,11 +153,10 @@ object ScreenTimeEnforcer {
     private fun isCurrentHourInAllowedWindow(startHour: Int, endHour: Int): Boolean {
         val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         return if (startHour == endHour) {
-            true // טווח לא הוגדר בפועל (0 שעות) - לא מגביל לפי שעה
+            true
         } else if (startHour < endHour) {
             currentHour in startHour until endHour
         } else {
-            // טווח שחוצה חצות, למשל 22:00 - 06:00
             currentHour >= startHour || currentHour < endHour
         }
     }
